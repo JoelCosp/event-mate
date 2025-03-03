@@ -1,45 +1,22 @@
-import { useState, useEffect } from 'react';
-import { getCharacters } from './services/EventsService';
-import './App.css';
-
-function App() {
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const response = await getCharacters();
-        setEvents(response.characters);
-      } catch (error) {
-        console.error('Error al cargar los eventos:', error);
-      }
-    };
-
-    loadEvents();
-  }, []);
-
+import React from 'react'
+import {BrowserRouter, Routes, Route} from 'react-router-dom' 
+import Home from './pages/Home'
+import Create from './pages/Create'
+import Edit from './pages/Edit'
+import Read from './pages/Read'
+ 
+const App = () => {
   return (
-    <>
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-
-      <div>
-        <h2>Eventos:</h2>
-        <ul>
-          {events.length > 0 ? (
-            events.map((event) => (
-              <li key={event.id}>
-                {event.name} - {event.location} - {event.date}
-              </li>
-            ))
-          ) : (
-            <p>No hay eventos disponibles.</p>
-          )}
-        </ul>
-      </div>
-    </>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />}/> 
+        <Route path="/create" element={<Create />}/> 
+        <Route path="/edit/:id" element={<Edit />}/> 
+        <Route path="/read/:id" element={<Read />}/> 
+        <Route path="**" element={<Home />}/> 
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App

@@ -1,35 +1,63 @@
-const express = require('express');
-const app = express();
-const port = 5000;
-const { getAllEvents, getGuestsByEvent } = require('./queries'); // Importa las funciones
+// DEPENDENCIAS
+const express = require("express");
+const mysql = require("mysql");
+const cors = require("cors");
+const path = require("path");
 
-// Middleware para parsear JSON
+const app = express();
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use(cors());
 app.use(express.json());
 
-// Ruta para obtener todos los eventos
+const port = 5000;
+
+const db = mysql.createConnection({
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "event_mate"
+})
+
+// CREAR data
+app.post('/add-event', (req, res) => {
+    sql = "INSERT INTO events (`name`, `location`, `date` ) VALUES (?, ?, ?)";
+    const values = [
+        req.body.name,
+        req.body.location,
+        req.body.date
+    ]
+    db.query(sql, values, (err, result) => {
+        if(err) {
+            return res.json({message: 'Something went wrong' + err})
+        }
+        return res.json({success: 'Event added successfully'})
+    })
+})
+// LISTAR eventos
 app.get('/events', (req, res) => {
-  /* getAllEvents((err, events) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al obtener los eventos' });
-    }
-    res.json(events);
-  }); */
+    sql = "SELECT * FROM events";
+    db.query(sql, (err, result) => {
+        if(err) {
+            return res.json({message: 'Something went wrong' + err})
+        }
+        return res.json(result)
+    })
+})
 
-  getAllEvents();
-});
+// LISTAR evento por ID
+app.get('/get-event/:id', (req, res) => {
+    const id = req.params.id;
+    sql = "SELECT * FROM events WHERE `id` = ?";
+    db.query(sql, [id], (err, result) => {
+        if(err) {
+            return res.json({message: 'Something went wrong' + err})
+        }
+        return res.json(result)
+    })
+})
 
-// Ruta para obtener los invitados de un evento
-app.get('/events/:id/guests', (req, res) => {
-  const eventId = req.params.id;
-  getGuestsByEvent(eventId, (err, guests) => {
-    if (err) {
-      return res.status(500).json({ error: 'Error al obtener los invitados' });
-    }
-    res.json(guests);
-  });
-});
-
-// Iniciar el servidor
+// INICIAR el servidor
 app.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
-});
+   console.log("Listening to port: " + port); 
+})
